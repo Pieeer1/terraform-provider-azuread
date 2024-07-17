@@ -19,7 +19,6 @@ import (
 // - GitHub OIDC authentication
 // - MSI authentication
 // - Azure CLI authentication
-// - Pre-Existing Token authentication
 //
 // Whether one of these is returned depends on whether it is enabled in the Credentials, and whether sufficient
 // configuration fields are set to enable that authentication method.
@@ -35,20 +34,6 @@ import (
 // environment. If any authentication mechanism fails due to misconfiguration or some other error, the function
 // will return (nil, error) and later mechanisms will not be attempted.
 func NewAuthorizerFromCredentials(ctx context.Context, c Credentials, api environments.Api) (Authorizer, error) {
-	if c.EnableAuthenticatingUsingPreExistingToken {
-		opts := ExistingTokenAuthorizerOptions{
-			Api:   api,
-			Token: c.PreExistingToken,
-		}
-		a, err := NewExistingTokenAuthorizer(ctx, opts)
-		if err != nil {
-			return nil, fmt.Errorf("could not configure ExistingToken Authorizer: %s", err)
-		}
-		if a != nil {
-			return a, nil
-		}
-	}
-
 	if c.EnableAuthenticatingUsingClientCertificate && strings.TrimSpace(c.TenantID) != "" && strings.TrimSpace(c.ClientID) != "" && (len(c.ClientCertificateData) > 0 || strings.TrimSpace(c.ClientCertificatePath) != "") {
 		opts := ClientCertificateAuthorizerOptions{
 			Environment:  c.Environment,
