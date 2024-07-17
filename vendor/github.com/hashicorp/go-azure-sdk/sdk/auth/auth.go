@@ -19,7 +19,6 @@ import (
 // - GitHub OIDC authentication
 // - MSI authentication
 // - Azure CLI authentication
-// - Pre-Existing Token authentication
 //
 // Whether one of these is returned depends on whether it is enabled in the Credentials, and whether sufficient
 // configuration fields are set to enable that authentication method.
