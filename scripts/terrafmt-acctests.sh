@@ -5,7 +5,7 @@
 
 echo "==> Checking acceptance test terraform blocks are formatted..."
 
-files=$(find ./internal -type f -name "*_test.go")
+files=$(/bin/find ./internal -type f -name "*_test.go")
 error=false
 
 for f in $files; do
@@ -22,7 +22,7 @@ if ${error}; then
   echo "$ terrafmt fmt -f ./path/to/source.go"
   echo ""
   echo "format all website files:"
-  echo "$ find ./docs | egrep \"_test.go\" | sort | while read f; do terrafmt fmt -f \$f; done"
+  echo "$ /bin/find ./docs | egrep \"_test.go\" | sort | while read f; do terrafmt fmt -f \$f; done"
   echo ""
   echo "on windows:"
   echo "$ Get-ChildItem -Path . -Recurse -Filter \"*_test.go\" | foreach {terrafmt fmt -f $_.fullName}"

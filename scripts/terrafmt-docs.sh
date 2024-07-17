@@ -7,7 +7,7 @@ DIR="$(cd "$(dirname "$0")"/.. && pwd)"
 
 echo "==> Checking documentation terraform blocks are formatted..."
 
-files=$(find "${DIR}"/docs -type f -name "*.md")
+files=$(/bin/find "${DIR}"/docs -type f -name "*.md")
 error=false
 
 for f in $files; do
@@ -24,7 +24,7 @@ if ${error}; then
   echo "$ terrafmt fmt ./docs/resources/name.md"
   echo ""
   echo "format all documentation files:"
-  echo "$ find docs | egrep '\.md$' | sort | while read f; do terrafmt fmt \$f; done"
+  echo "$ /bin/find docs | egrep '\.md$' | sort | while read f; do terrafmt fmt \$f; done"
   echo ""
   echo "on windows:"
   echo "$ Get-ChildItem -Path docs -Recurse -Filter \"*.md\" | foreach {terrafmt fmt $_.fullName}"
