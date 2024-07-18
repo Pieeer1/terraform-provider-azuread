@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-provider-azuread/internal/services/policies"
 	"github.com/hashicorp/terraform-provider-azuread/internal/services/serviceprincipals"
 	"github.com/hashicorp/terraform-provider-azuread/internal/services/synchronization"
+	"github.com/hashicorp/terraform-provider-azuread/internal/services/tenant"
 	"github.com/hashicorp/terraform-provider-azuread/internal/services/userflows"
 	"github.com/hashicorp/terraform-provider-azuread/internal/services/users"
 )
@@ -50,6 +51,7 @@ func SupportedUntypedServices() []sdk.UntypedServiceRegistration {
 		policies.Registration{},
 		serviceprincipals.Registration{},
 		synchronization.Registration{},
+		tenant.Registration{},
 		userflows.Registration{},
 		users.Registration{},
 	}

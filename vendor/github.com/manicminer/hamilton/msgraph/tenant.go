@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -33,8 +34,12 @@ func (c *TenantClient) Get(ctx context.Context, domain string, subscriptionId st
 	resp, status, _, err := c.BaseClient.Get(ctx, GetHttpRequestInput{
 		ValidStatusCodes: []int{http.StatusOK},
 		Uri: Uri{
-			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s?api-version=%s", subscriptionId, resourceGroupName, domain, c.BaseClient.ApiVersion),
+			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s", subscriptionId, resourceGroupName, domain),
+			Params: url.Values{
+				"api-version": []string{ManagementCIAMApiVersion},
+			},
 		},
+		IgnoreEncodingForParams: true,
 	})
 	if err != nil {
 		return nil, status, fmt.Errorf("TenantClient.BaseClient.Get(): %v", err)
@@ -68,8 +73,12 @@ func (c *TenantClient) Create(ctx context.Context, tenant Tenant, domain string,
 		Body:             body,
 		ValidStatusCodes: []int{http.StatusCreated},
 		Uri: Uri{
-			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s?api-version=%s", subscriptionId, resourceGroupName, domain, c.BaseClient.ApiVersion),
+			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s", subscriptionId, resourceGroupName, domain),
+			Params: url.Values{
+				"api-version": []string{ManagementCIAMApiVersion},
+			},
 		},
+		IgnoreEncodingForParams: true,
 	})
 	if err != nil {
 		return nil, status, fmt.Errorf("TenantClient.BaseClient.Put(): %v", err)
@@ -101,6 +110,7 @@ func (c *TenantClient) poll(ctx context.Context, endpoint string, nextRequestIn 
 		Uri: Uri{
 			Entity: strings.Split(endpoint, c.BaseClient.Endpoint)[1],
 		},
+		IgnoreEncodingForParams: true,
 	})
 	if err != nil {
 		return status, fmt.Errorf("TenantClient.BaseClient.Get(): %v", err)
@@ -135,8 +145,12 @@ func (c *TenantClient) Delete(ctx context.Context, domain string, subscriptionId
 	resp, status, _, err := c.BaseClient.Delete(ctx, DeleteHttpRequestInput{
 		ValidStatusCodes: []int{http.StatusNoContent},
 		Uri: Uri{
-			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s?api-version=%s", subscriptionId, resourceGroupName, domain, c.BaseClient.ApiVersion),
+			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s", subscriptionId, resourceGroupName, domain),
+			Params: url.Values{
+				"api-version": []string{ManagementCIAMApiVersion},
+			},
 		},
+		IgnoreEncodingForParams: true,
 	})
 	if err != nil {
 		return status, fmt.Errorf("TenantClient.BaseClient.Delete(): %v", err)
@@ -164,8 +178,12 @@ func (c *TenantClient) Update(ctx context.Context, tenant Tenant, domain string,
 		Body:             body,
 		ValidStatusCodes: []int{http.StatusOK},
 		Uri: Uri{
-			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s?api-version=%s", subscriptionId, resourceGroupName, domain, c.BaseClient.ApiVersion),
+			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s", subscriptionId, resourceGroupName, domain),
+			Params: url.Values{
+				"api-version": []string{ManagementCIAMApiVersion},
+			},
 		},
+		IgnoreEncodingForParams: true,
 	})
 	if err != nil {
 		return nil, status, fmt.Errorf("TenantClient.BaseClient.Patch(): %v", err)

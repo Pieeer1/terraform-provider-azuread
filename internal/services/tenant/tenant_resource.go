@@ -60,12 +60,6 @@ func tenantResource() *schema.Resource {
 				ForceNew:         true,
 				ValidateDiagFunc: validation.ValidateDiag(validation.StringIsNotWhiteSpace),
 			},
-			"api_version": {
-				Description: "The API version of the Azure Resource Manager",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "2023-05-17-preview",
-			},
 			"tenant_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -172,25 +166,30 @@ func determineCountryCode(country string) (string, error) {
 
 func createTenant(d *pluginsdk.ResourceData) (*msgraph.Tenant, error) {
 	baseTier := "A0"
-	country := d.Get("location").(*string)
-	countryCode, err := determineCountryCode(*country)
+	var (
+		country     = d.Get("location").(string)
+		skuName     = d.Get("sku_name").(string)
+		displayName = d.Get("display_name").(string)
+		tags        = d.Get("tags").(map[string]interface{})
+	)
+	countryCode, err := determineCountryCode(country)
 	if err != nil {
-		return nil, fmt.Errorf("invalid country code: %s", *country)
+		return nil, fmt.Errorf("invalid country code: %s", country)
 	}
 
 	return &msgraph.Tenant{
-		Location: country,
+		Location: &country,
 		Sku: &msgraph.TenantSku{
-			Name: d.Get("sku_name").(*string),
+			Name: &skuName,
 			Tier: &baseTier,
 		},
 		Properties: &msgraph.TenantProperties{
 			CreateTenantProperties: &msgraph.CreateTenantProperties{
-				DisplayName: d.Get("display_name").(*string),
+				DisplayName: &displayName,
 				CountryCode: &countryCode,
 			},
 		},
-		Tags: d.Get("tags").(*map[string]string),
+		Tags: &tags,
 	}, nil
 
 }

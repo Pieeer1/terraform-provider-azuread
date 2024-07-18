@@ -1812,11 +1812,11 @@ type TargetResource struct {
 }
 
 type Tenant struct {
-	Id         *string            `json:"id,omitempty"`
-	Location   *string            `json:"location,omitempty"`
-	Sku        *TenantSku         `json:"sku,omitempty"`
-	Properties *TenantProperties  `json:"properties,omitempty"`
-	Tags       *map[string]string `json:"tags,omitempty"`
+	Id         *string                 `json:"id,omitempty"`
+	Location   *string                 `json:"location,omitempty"`
+	Sku        *TenantSku              `json:"sku,omitempty"`
+	Properties *TenantProperties       `json:"properties,omitempty"`
+	Tags       *map[string]interface{} `json:"tags,omitempty"`
 }
 
 type TenantSku struct {

@@ -116,15 +116,23 @@ func NewClient(apiVersion ApiVersion) Client {
 }
 
 // buildUri is used by the package to build a complete URI string for API requests.
-func (c Client) buildUri(uri Uri) (string, error) {
+func (c Client) buildUri(uri Uri, ignoreEncodingForParams bool) (string, error) {
 	newUrl, err := url.Parse(string(c.Endpoint))
 	if err != nil {
 		return "", err
 	}
 	newUrl.Path = "/" + string(c.ApiVersion)
 	newUrl.Path = fmt.Sprintf("%s/%s", newUrl.Path, strings.TrimLeft(uri.Entity, "/"))
-	if uri.Params != nil {
+	if uri.Params != nil && !ignoreEncodingForParams {
 		newUrl.RawQuery = uri.Params.Encode()
+	} else if uri.Params != nil && ignoreEncodingForParams {
+		var joinedParams string
+
+		for k, v := range uri.Params {
+			joinedParams += fmt.Sprintf("%s=%s&", k, v[0])
+		}
+
+		newUrl.RawQuery = strings.TrimRight(joinedParams, "&")
 	}
 	return newUrl.String(), nil
 }
@@ -256,11 +264,12 @@ func containsStatusCode(expected []int, actual int) bool {
 
 // DeleteHttpRequestInput configures a DELETE request.
 type DeleteHttpRequestInput struct {
-	ConsistencyFailureFunc ConsistencyFailureFunc
-	OData                  odata.Query
-	ValidStatusCodes       []int
-	ValidStatusFunc        ValidStatusFunc
-	Uri                    Uri
+	ConsistencyFailureFunc  ConsistencyFailureFunc
+	OData                   odata.Query
+	ValidStatusCodes        []int
+	ValidStatusFunc         ValidStatusFunc
+	Uri                     Uri
+	IgnoreEncodingForParams bool
 }
 
 // GetConsistencyFailureFunc returns a function used to evaluate whether a failed request is due to eventual consistency and should be retried.
@@ -291,7 +300,7 @@ func (i DeleteHttpRequestInput) GetValidStatusFunc() ValidStatusFunc {
 // Delete performs a DELETE request.
 func (c Client) Delete(ctx context.Context, input DeleteHttpRequestInput) (*http.Response, int, *odata.OData, error) {
 	var status int
-	url, err := c.buildUri(input.Uri)
+	url, err := c.buildUri(input.Uri, input.IgnoreEncodingForParams)
 	if err != nil {
 		return nil, status, nil, fmt.Errorf("unable to make request: %v", err)
 	}
@@ -308,13 +317,14 @@ func (c Client) Delete(ctx context.Context, input DeleteHttpRequestInput) (*http
 
 // GetHttpRequestInput configures a GET request.
 type GetHttpRequestInput struct {
-	ConsistencyFailureFunc ConsistencyFailureFunc
-	DisablePaging          bool
-	OData                  odata.Query
-	ValidStatusCodes       []int
-	ValidStatusFunc        ValidStatusFunc
-	Uri                    Uri
-	rawUri                 string
+	ConsistencyFailureFunc  ConsistencyFailureFunc
+	DisablePaging           bool
+	OData                   odata.Query
+	ValidStatusCodes        []int
+	ValidStatusFunc         ValidStatusFunc
+	Uri                     Uri
+	rawUri                  string
+	IgnoreEncodingForParams bool
 }
 
 // GetConsistencyFailureFunc returns a function used to evaluate whether a failed request is due to eventual consistency and should be retried.
@@ -353,7 +363,7 @@ func (c Client) Get(ctx context.Context, input GetHttpRequestInput) (*http.Respo
 		input.Uri.Params = input.OData.AppendValues(input.Uri.Params)
 
 		var err error
-		url, err = c.buildUri(input.Uri)
+		url, err = c.buildUri(input.Uri, input.IgnoreEncodingForParams)
 		if err != nil {
 			return nil, status, nil, fmt.Errorf("unable to make request: %v", err)
 		}
@@ -436,12 +446,13 @@ func (c Client) Get(ctx context.Context, input GetHttpRequestInput) (*http.Respo
 
 // PatchHttpRequestInput configures a PATCH request.
 type PatchHttpRequestInput struct {
-	ConsistencyFailureFunc ConsistencyFailureFunc
-	Body                   []byte
-	OData                  odata.Query
-	ValidStatusCodes       []int
-	ValidStatusFunc        ValidStatusFunc
-	Uri                    Uri
+	ConsistencyFailureFunc  ConsistencyFailureFunc
+	Body                    []byte
+	OData                   odata.Query
+	ValidStatusCodes        []int
+	ValidStatusFunc         ValidStatusFunc
+	Uri                     Uri
+	IgnoreEncodingForParams bool
 }
 
 // GetConsistencyFailureFunc returns a function used to evaluate whether a failed request is due to eventual consistency and should be retried.
@@ -472,7 +483,7 @@ func (i PatchHttpRequestInput) GetValidStatusFunc() ValidStatusFunc {
 // Patch performs a PATCH request.
 func (c Client) Patch(ctx context.Context, input PatchHttpRequestInput) (*http.Response, int, *odata.OData, error) {
 	var status int
-	url, err := c.buildUri(input.Uri)
+	url, err := c.buildUri(input.Uri, input.IgnoreEncodingForParams)
 	if err != nil {
 		return nil, status, nil, fmt.Errorf("unable to make request: %v", err)
 	}
@@ -489,12 +500,13 @@ func (c Client) Patch(ctx context.Context, input PatchHttpRequestInput) (*http.R
 
 // PostHttpRequestInput configures a POST request.
 type PostHttpRequestInput struct {
-	Body                   []byte
-	ConsistencyFailureFunc ConsistencyFailureFunc
-	OData                  odata.Query
-	ValidStatusCodes       []int
-	ValidStatusFunc        ValidStatusFunc
-	Uri                    Uri
+	Body                    []byte
+	ConsistencyFailureFunc  ConsistencyFailureFunc
+	OData                   odata.Query
+	ValidStatusCodes        []int
+	ValidStatusFunc         ValidStatusFunc
+	Uri                     Uri
+	IgnoreEncodingForParams bool
 }
 
 // GetConsistencyFailureFunc returns a function used to evaluate whether a failed request is due to eventual consistency and should be retried.
@@ -525,7 +537,7 @@ func (i PostHttpRequestInput) GetValidStatusFunc() ValidStatusFunc {
 // Post performs a POST request.
 func (c Client) Post(ctx context.Context, input PostHttpRequestInput) (*http.Response, int, *odata.OData, error) {
 	var status int
-	url, err := c.buildUri(input.Uri)
+	url, err := c.buildUri(input.Uri, input.IgnoreEncodingForParams)
 	if err != nil {
 		return nil, status, nil, fmt.Errorf("unable to make request: %v", err)
 	}
@@ -542,13 +554,14 @@ func (c Client) Post(ctx context.Context, input PostHttpRequestInput) (*http.Res
 
 // PutHttpRequestInput configures a PUT request.
 type PutHttpRequestInput struct {
-	ConsistencyFailureFunc ConsistencyFailureFunc
-	ContentType            string
-	Body                   []byte
-	OData                  odata.Query
-	ValidStatusCodes       []int
-	ValidStatusFunc        ValidStatusFunc
-	Uri                    Uri
+	ConsistencyFailureFunc  ConsistencyFailureFunc
+	ContentType             string
+	Body                    []byte
+	OData                   odata.Query
+	ValidStatusCodes        []int
+	ValidStatusFunc         ValidStatusFunc
+	Uri                     Uri
+	IgnoreEncodingForParams bool
 }
 
 // GetConsistencyFailureFunc returns a function used to evaluate whether a failed request is due to eventual consistency and should be retried.
@@ -582,7 +595,7 @@ func (i PutHttpRequestInput) GetValidStatusFunc() ValidStatusFunc {
 // Put performs a PUT request.
 func (c Client) Put(ctx context.Context, input PutHttpRequestInput) (*http.Response, int, *odata.OData, error) {
 	var status int
-	url, err := c.buildUri(input.Uri)
+	url, err := c.buildUri(input.Uri, input.IgnoreEncodingForParams)
 	if err != nil {
 		return nil, status, nil, fmt.Errorf("unable to make request: %v", err)
 	}

@@ -14,9 +14,13 @@ func NewClient(o *common.ClientOptions) *Client {
 	tenantClient := msgraph.NewTenantClient()
 	o.ConfigureClient(&tenantClient.BaseClient)
 
-	tenantClient.BaseClient.Endpoint = "https://management.azure.com/subscriptions"
-	//this endpoint is currently in public preview
-	tenantClient.BaseClient.ApiVersion = msgraph.ManagementCIAMApiVersion
+	tenantClient.BaseClient.Endpoint = "https://management.azure.com"
+	/*
+		ugly workaround but since we are not hitting the standard graph endpoint
+		we need to set the api version here, which in turn allows it to use the correct base url.
+		The Base Client might need some overrides if this is not a preferable solution
+	*/
+	tenantClient.BaseClient.ApiVersion = "subscriptions"
 
 	return &Client{
 		TenantClient: tenantClient,
