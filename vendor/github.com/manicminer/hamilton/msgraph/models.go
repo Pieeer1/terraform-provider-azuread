@@ -1811,6 +1811,27 @@ type TargetResource struct {
 	ModifiedProperties *[]ModifiedProperty `json:"modifiedProperties,omitempty"`
 }
 
+type Tenant struct {
+	Id         *string           `json:"id,omitempty"`
+	Location   *string           `json:"location,omitempty"`
+	Sku        *TenantSku        `json:"sku,omitempty"`
+	Properties *TenantProperties `json:"properties,omitempty"`
+}
+
+type TenantSku struct {
+	Name *string `json:"skuName,omitempty"`
+	Tier *string `json:"skuTier,omitempty"`
+}
+
+type TenantProperties struct {
+	CreateTenantProperties *CreateTenantProperties `json:"createTenantProperties,omitempty"`
+}
+
+type CreateTenantProperties struct {
+	DisplayName *string `json:"displayName,omitempty"`
+	CountryCode *string `json:"countryCode,omitempty"`
+}
+
 type TermsOfUseAgreement struct {
 	ID                                *string                        `json:"id,omitempty"`
 	DisplayName                       *string                        `json:"displayName,omitempty"`
