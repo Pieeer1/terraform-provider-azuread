@@ -1826,6 +1826,15 @@ type TenantSku struct {
 
 type TenantProperties struct {
 	CreateTenantProperties *CreateTenantProperties `json:"createTenantProperties,omitempty"`
+	ProvisioningState      *string                 `json:"provisioningState,omitempty"`
+	BillingConfig          *TenantBillingConfig    `json:"billingConfig,omitempty"`
+	TenantId               *string                 `json:"tenantId,omitempty"`
+	DomainName             *string                 `json:"domainName,omitempty"`
+}
+
+type TenantBillingConfig struct {
+	BillingType        *string `json:"billingType,omitempty"`
+	EffectiveStartDate *string `json:"effectiveStartDate,omitempty"`
 }
 
 type CreateTenantProperties struct {

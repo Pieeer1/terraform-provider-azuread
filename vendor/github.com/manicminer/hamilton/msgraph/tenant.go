@@ -24,8 +24,6 @@ func NewTenantClient() *TenantClient {
 
 	baseClient := NewClient(ManagementCIAMApiVersion)
 
-	baseClient.Endpoint = "https://management.azure.com/subscriptions"
-
 	return &TenantClient{
 		baseClient,
 	}
