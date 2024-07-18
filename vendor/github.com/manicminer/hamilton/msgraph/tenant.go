@@ -132,3 +132,60 @@ func (c *TenantClient) poll(ctx context.Context, endpoint string, nextRequestIn 
 	}
 
 }
+
+func (c *TenantClient) Delete(ctx context.Context, domain string, subscriptionId string, resourceGroupName string) (int, error) {
+	resp, status, _, err := c.BaseClient.Delete(ctx, DeleteHttpRequestInput{
+		ValidStatusCodes: []int{http.StatusNoContent},
+		Uri: Uri{
+			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s?api-version=%s", subscriptionId, resourceGroupName, domain, c.BaseClient.ApiVersion),
+		},
+	})
+	if err != nil {
+		return status, fmt.Errorf("TenantClient.BaseClient.Delete(): %v", err)
+	}
+
+	defer resp.Body.Close()
+
+	return status, nil
+}
+
+func (c *TenantClient) Update(ctx context.Context, tenant Tenant, domain string, subscriptionId string, resourceGroupName string) (*Tenant, int, error) {
+	var status int
+
+	//currently the ciam update only supports updating tags. Any other field will return a 400
+	tenantWithOnlyTags := Tenant{
+		Tags: tenant.Tags,
+	}
+
+	body, err := json.Marshal(tenantWithOnlyTags)
+	if err != nil {
+		return nil, status, fmt.Errorf("json.Marshal(): %v", err)
+	}
+
+	resp, status, _, err := c.BaseClient.Patch(ctx, PatchHttpRequestInput{
+		Body:             body,
+		ValidStatusCodes: []int{http.StatusOK},
+		Uri: Uri{
+			Entity: fmt.Sprintf("/%s/resourceGroups/%s/providers/Microsoft.AzureActiveDirectory/ciamDirectories/%s?api-version=%s", subscriptionId, resourceGroupName, domain, c.BaseClient.ApiVersion),
+		},
+	})
+	if err != nil {
+		return nil, status, fmt.Errorf("TenantClient.BaseClient.Patch(): %v", err)
+	}
+
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, status, fmt.Errorf("io.ReadAll(): %v", err)
+	}
+
+	var responseTenant Tenant
+	err = json.Unmarshal(respBody, &responseTenant)
+
+	if err != nil {
+		return nil, status, fmt.Errorf("json.Unmarshal(): %v", err)
+	}
+
+	return &responseTenant, status, nil
+}
